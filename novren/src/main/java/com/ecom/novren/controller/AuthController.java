@@ -3,6 +3,7 @@ package com.ecom.novren.controller;
 
 import com.ecom.novren.enums.USER_ROLE;
 import com.ecom.novren.model.VerificationCode;
+import com.ecom.novren.request.LoginRequest;
 import com.ecom.novren.response.ApiResponse;
 import com.ecom.novren.response.AuthResponse;
 import com.ecom.novren.response.SingupRequest;
@@ -43,5 +44,15 @@ public class AuthController {
         res.setMessage("otp sent successfully");
 
         return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/signing")
+    public ResponseEntity<AuthResponse> loginHandler(
+            @RequestBody LoginRequest req) throws Exception {
+        authService.signing(req);
+
+        AuthResponse authResponse= authService.signing(req);
+
+        return ResponseEntity.ok(authResponse);
     }
 }
