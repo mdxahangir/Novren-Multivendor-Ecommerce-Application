@@ -1,6 +1,8 @@
 package com.ecom.novren.service.impl;
 
 import com.ecom.novren.config.JwtProvider;
+import com.ecom.novren.model.VerificationCode;
+import com.ecom.novren.repository.VerificationCodeRepository;
 import com.ecom.novren.response.SingupRequest;
 import com.ecom.novren.enums.USER_ROLE;
 import com.ecom.novren.model.Cart;
@@ -8,6 +10,8 @@ import com.ecom.novren.model.User;
 import com.ecom.novren.repository.CartRepository;
 import com.ecom.novren.repository.UserRepository;
 import com.ecom.novren.service.AuthService;
+import com.ecom.novren.service.EmailService;
+import com.ecom.novren.utils.OtpUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,8 +31,50 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final CartRepository cartRepository;
     private final JwtProvider jwtProvider;
+    private final VerificationCodeRepository verificationCodeRepository;
+    private final EmailService emailService;
+
     @Override
-    public String createUser(SingupRequest req) {
+    public void sentLoginOtp(String email) throws Exception {
+        String SIGNING_PREFIX="signin_";
+        if (email.startsWith(SIGNING_PREFIX)){
+            email=email.substring(SIGNING_PREFIX.length());
+
+            User user= userRepository.findByEmail(email);
+            if (user==null){
+                throw new Exception("user not exist with provided email");
+            }
+        }
+        VerificationCode isExist= verificationCodeRepository.findByEmail(email);
+        if (isExist!=null){
+            verificationCodeRepository.delete(isExist);
+
+        }
+
+        String otp= OtpUtil.generateOtp();
+
+        VerificationCode verificationCode=new VerificationCode();
+        verificationCode.setOtp(otp);
+        verificationCode.setEmail(email);
+        verificationCodeRepository.save(verificationCode);
+
+        String subject="novren login/signup otp";
+        String text= "your login/signup otp is ..";
+        emailService.sendVerificationOtpEmail(email,otp,subject,text);
+
+    }
+
+    @Override
+    public String createUser(SingupRequest req) throws Exception {
+
+        VerificationCode verificationCode=verificationCodeRepository.findByEmail(req.getEmail());
+
+        if (verificationCode==null || !verificationCode.getOtp().equals(req.getOtp())){
+
+            throw new Exception("wrong otp...");
+        }
+
+
         User user = userRepository.findByEmail(req.getEmail());
 
         if (user==null){

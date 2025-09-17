@@ -2,6 +2,8 @@ package com.ecom.novren.controller;
 
 
 import com.ecom.novren.enums.USER_ROLE;
+import com.ecom.novren.model.VerificationCode;
+import com.ecom.novren.response.ApiResponse;
 import com.ecom.novren.response.AuthResponse;
 import com.ecom.novren.response.SingupRequest;
 import com.ecom.novren.repository.UserRepository;
@@ -22,12 +24,23 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> createUserHandler(@RequestBody SingupRequest req){
+    public ResponseEntity<AuthResponse> createUserHandler(@RequestBody SingupRequest req) throws Exception {
         String jwt=authService.createUser(req);
         AuthResponse res=new AuthResponse();
         res.setJwt(jwt);
         res.setMessage("register success");
         res.setRole(USER_ROLE.ROLE_CUSTOMER);
+
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/sent/login-signup-otp")
+    public ResponseEntity<ApiResponse> sentOtpHandler(@RequestBody VerificationCode req) throws Exception {
+        authService.sentLoginOtp(req.getEmail());
+
+        ApiResponse res=new ApiResponse();
+
+        res.setMessage("otp sent successfully");
 
         return ResponseEntity.ok(res);
     }
