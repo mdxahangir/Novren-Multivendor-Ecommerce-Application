@@ -32,7 +32,7 @@ public class Seller {
     private BankDetails bankDetails = new BankDetails();
 
     @OneToOne(cascade =  CascadeType.ALL)
-    private Address address = new Address();
+    private Address pickupaddress = new Address();
 
     private String GSTIN;
 
@@ -40,7 +40,7 @@ public class Seller {
 
     private boolean isEmailVerified=false;
 
-    private AccountStatus accountSatus = AccountStatus.PENDING_VERIFICATION;
+    private AccountStatus accountStatus = AccountStatus.PENDING_VERIFICATION;
 
 
 }
